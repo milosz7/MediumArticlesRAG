@@ -1,0 +1,11 @@
+numpy==1.26.4
+pandas==2.2.1
+Requests==2.31.0
+spacy
+tqdm==4.66.2
+transformers==4.38.2
+sentence-transformers
+accelerate
+bitsandbytes
+torch
+jupyter
