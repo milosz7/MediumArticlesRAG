@@ -20,6 +20,14 @@ def load_resources():
     return device, embeddings, text_chunks, encoder, llm, tokenizer
 
 
+@st.experimental_dialog("Source information")
+def display_modal(chunks, titles, scores):
+    for chunk, title, score in zip(chunks, titles, scores):
+        st.header("From article: " + title)
+        st.write(f'<p style="font-size: 10px">Similarity score: {score:.2f}</p>', unsafe_allow_html=True)
+        st.write(f'<p style="font-size: 12px">{chunk}</p>', unsafe_allow_html=True)
+
+
 def main():
     st.title("Chatbot with RAG")
 
@@ -42,12 +50,13 @@ def main():
             with st.spinner("Thinking..."):
                 chunks, titles, scores = search_text(query, embeddings, text_chunks, encoder, device)
                 response = generate_response(query, llm, tokenizer, device, chunks)
-
                 response = response.split("<start_of_turn>model")[-1].strip()
                 response = response.replace("<eos>", "")
+
             st.write(response)
-        message = {"role": "assistant", "content": response}
-        st.session_state.messages.append(message)
+            st.button("Source information", on_click=display_modal, args=(chunks, titles, scores, ))
+            message = {"role": "assistant", "content": response}
+            st.session_state.messages.append(message)
 
 if __name__ == "__main__":
     main()
