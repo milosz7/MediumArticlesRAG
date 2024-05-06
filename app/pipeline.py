@@ -13,3 +13,26 @@ def get_device():
         device = "cpu"
 
     return device
+
+
+def load_embeddings():
+    device = get_device()
+    path = os.path.join("data", f"text_embeddings_{device}.pt")
+    try:
+        embeddings = torch.load(path)
+        return embeddings
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            "Embeddings file not found. Please run the notebook `rag-creation.ipynb` to generate embeddings."
+        )
+
+
+def load_text_chunks():
+    path = os.path.join("data", "chunks_embedded.csv")
+    try:
+        text_chunks_df = pd.read_csv(path)
+        return text_chunks_df
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            "Text chunks file not found. Please run the notebook `rag-creation.ipynb` to generate text chunks."
+        )
