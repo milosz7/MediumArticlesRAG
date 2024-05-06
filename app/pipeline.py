@@ -7,6 +7,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 def get_device():
+    """
+    Get the device to run the model on.
+    """
     if torch.cuda.is_available():
         device = "cuda"
     elif torch.backends.mps.is_available():
@@ -18,6 +21,9 @@ def get_device():
 
 
 def load_embeddings():
+    """
+    Load the text embeddings.
+    """
     device = get_device()
     path = os.path.join("data", f"text_embeddings_{device}.pt")
     try:
@@ -30,6 +36,9 @@ def load_embeddings():
 
 
 def load_text_chunks():
+    """
+    Load the text chunks.
+    """
     path = os.path.join("data", "chunks_embedded.csv")
     try:
         text_chunks_df = pd.read_csv(path)
@@ -41,6 +50,9 @@ def load_text_chunks():
 
 
 def retrieve_similar_embeddings(query, embeddings, model, device, n=5):
+    """
+    Retrieve the most similar embeddings to the query.
+    """
     query_embedding = model.encode(query, convert_to_tensor=True, device=device)
     dot_products = util.dot_score(query_embedding, embeddings)
     top_results = torch.topk(dot_products, k=n)
@@ -51,6 +63,9 @@ def retrieve_similar_embeddings(query, embeddings, model, device, n=5):
 
 
 def search_text(query, embeddings, chunks_df, model, device, n=5):
+    """
+    Search for the most similar text chunks to the query.
+    """
     indices, scores = retrieve_similar_embeddings(query, embeddings, model, device, n)
     indices = indices.cpu().numpy().ravel()
     scores = scores.cpu().numpy().ravel()
@@ -63,6 +78,9 @@ def search_text(query, embeddings, chunks_df, model, device, n=5):
 
 
 def load_encoder():
+    """
+    Load the SentenceTransformer model.
+    """
     device = get_device()
     embedder = SentenceTransformer("all-mpnet-base-v2", device=device)
     embedder.to(device)
@@ -70,6 +88,9 @@ def load_encoder():
 
 
 def load_llm():
+    """
+    Load the LLM model and tokenizer.
+    """
     device = get_device()
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b-it")
     llm = AutoModelForCausalLM.from_pretrained("google/gemma-2b-it",
@@ -82,6 +103,9 @@ def load_llm():
 
 
 def create_prompt(query, context_chunks, tokenizer):
+    """
+    Create a prompt for the LLM to generate a response based on a query.
+    """
     query_start = "Answer the question: " + query
     answer_requirements = """
 Give yourself room to think by extracting relevant passages from the context before answering.
@@ -131,6 +155,9 @@ Use the following reference questions and answers as a style guideline:
 
 
 def generate_response(query, llm, tokenizer, device, context_chunks, max_length=256):
+    """
+    Generate a response to a query using the LLM.
+    """
     prompt = create_prompt(query, context_chunks, tokenizer)
     input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
     output = llm.generate(input_ids, do_sample=True, max_new_tokens=max_length, temperature=0.7)

@@ -7,6 +7,9 @@ from pipeline import (load_embeddings,
 
 @st.cache_resource(show_spinner=False)
 def load_resources():
+    """
+    Load all resources needed for the chatbot.
+    """
     with st.spinner("Loading resources..."):
         device = get_device()
         embeddings = load_embeddings()
@@ -22,6 +25,9 @@ def load_resources():
 
 @st.experimental_dialog("Source information")
 def display_modal(chunks, titles, scores):
+    """
+    Display the source information in a modal.
+    """
     for chunk, title, score in zip(chunks, titles, scores):
         st.header("From article: " + title)
         st.write(f'<p style="font-size: 10px">Similarity score: {score:.2f}</p>', unsafe_allow_html=True)
@@ -29,6 +35,9 @@ def display_modal(chunks, titles, scores):
 
 
 def main():
+    """
+    Main function to run the chatbot app.
+    """
     st.title("Chatbot with RAG")
 
     device, embeddings, text_chunks, encoder, llm, tokenizer = load_resources()
